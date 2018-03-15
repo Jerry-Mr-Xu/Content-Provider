@@ -66,6 +66,7 @@ public class BookProvider extends ContentProvider {
         }
 
         database.insert(tableName, null, values);
+        context.getContentResolver().notifyChange(uri, null);
         return uri;
     }
 
@@ -76,7 +77,11 @@ public class BookProvider extends ContentProvider {
             Log.e(TAG, "delete: unsupported uri = " + uri);
         }
 
-        return database.delete(tableName, selection, selectionArgs);
+        int delNum = database.delete(tableName, selection, selectionArgs);
+        if (delNum > 0) {
+            context.getContentResolver().notifyChange(uri, null);
+        }
+        return delNum;
     }
 
     @Override
@@ -86,7 +91,11 @@ public class BookProvider extends ContentProvider {
             Log.e(TAG, "update: unsupported uri = " + uri);
         }
 
-        return database.update(tableName, values, selection, selectionArgs);
+        int updNum = database.update(tableName, values, selection, selectionArgs);
+        if (updNum > 0) {
+            context.getContentResolver().notifyChange(uri, null);
+        }
+        return updNum;
     }
 
     private String getTableName(Uri uri) {
