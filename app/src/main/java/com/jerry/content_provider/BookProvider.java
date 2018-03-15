@@ -7,6 +7,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -38,6 +39,34 @@ public class BookProvider extends ContentProvider {
         context = getContext();
         database = new SQLHelper(context).getWritableDatabase();
         return false;
+    }
+
+    @Nullable
+    @Override
+    public Bundle call(@NonNull String method, @Nullable String arg, @Nullable Bundle extras) {
+        Bundle result;
+        String tableName = getTableName(Uri.parse(arg));
+
+        switch (method) {
+            case "getBookNum()":
+                int bookNum = getBookNum(tableName);
+                result = new Bundle();
+                result.putInt("bookNum", bookNum);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported method: " + method);
+        }
+        return result;
+    }
+
+    private int getBookNum(String tableName) {
+        Cursor cursor = database.rawQuery("select count(*) from " + tableName, null);
+        int bookNum = 0;
+        if (cursor.moveToFirst()) {
+            bookNum = cursor.getInt(0);
+        }
+        cursor.close();
+        return bookNum;
     }
 
     @Nullable
